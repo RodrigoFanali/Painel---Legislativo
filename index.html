@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Legislativo — Ver. Aldenor Lima</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#faf8f3;color:#1a1a1a;min-height:100vh}
+.header{background:#1a3a2a;padding:1.5rem 2rem 0}
+.header-label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#c9a84c;margin-bottom:4px}
+.header-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;color:#fff;line-height:1.2}
+.header-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem}
+.header-right{font-size:11px;color:rgba(255,255,255,0.4);text-align:right;line-height:1.6}
+.sync-btn{display:inline-block;margin-top:6px;padding:4px 12px;background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.4);border-radius:20px;color:#f0d080;font-size:11px;cursor:pointer;transition:all .2s}
+.sync-btn:hover{background:rgba(201,168,76,0.35)}
+.sync-btn.loading{opacity:.6;cursor:default}
+.metrics-bar{background:#2d5a3d;border-top:1px solid rgba(201,168,76,0.2);margin-top:1rem}
+.metrics-inner{max-width:1400px;margin:0 auto;padding:.75rem 2rem;display:flex;overflow-x:auto;gap:0}
+.metric{flex:1;min-width:80px;padding:.4rem .75rem;text-align:center;border-right:1px solid rgba(255,255,255,0.1)}
+.metric:last-child{border-right:none}
+.metric-val{font-family:'Playfair Display',serif;font-size:20px;color:#f0d080;line-height:1}
+.metric-label{font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.filters{background:#fff;border-bottom:1px solid #d8d0c0;box-shadow:0 2px 8px rgba(0,0,0,.06);position:sticky;top:0;z-index:100}
+.filters-inner{max-width:1400px;margin:0 auto;padding:.6rem 2rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.si{position:relative;flex:1;min-width:200px}
+.si input{width:100%;padding:7px 10px 7px 30px;border:1px solid #d8d0c0;border-radius:6px;font-size:13px;background:#faf8f3;outline:none}
+.si-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:#888}
+select{padding:6px 10px;border:1px solid #d8d0c0;border-radius:6px;font-size:12px;background:#faf8f3;outline:none;cursor:pointer}
+.ctag{font-size:11px;color:#888;padding:4px 10px;background:#f0ebe0;border-radius:20px;white-space:nowrap}
+.wrap{max-width:1400px;margin:1rem auto;padding:0 2rem 3rem}
+.leg{display:flex;gap:1.5rem;flex-wrap:wrap;font-size:11px;color:#666;margin-bottom:.75rem;align-items:center}
+.li{display:flex;align-items:center;gap:5px}
+.lc{width:12px;height:12px;border-radius:3px;border:1px solid #d8d0c0}
+.sapl-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#2d5a3d;background:#e8f5ee;border:1px solid #a8dcc0;border-radius:20px;padding:1px 8px}
+.tc{background:#fff;border-radius:10px;border:1px solid #d8d0c0;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead tr{background:#f0ebe0;border-bottom:2px solid #d8d0c0}
+th{padding:9px 10px;text-align:left;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:#888;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid #f0ece0;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.rp{background:#fffbee}
+tr.rs{background:#fff5f0}
+tr.ro{background:#fff}
+tr.ro:nth-child(even){background:#fafaf8}
+tr:hover td{filter:brightness(.97)}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500;white-space:nowrap}
+.bPL{background:#ddeeff;color:#1a4a7a;border:1px solid #b8d4f0}
+.bPDL{background:#eeeaff;color:#3a2880;border:1px solid #c8c0f0}
+.bPR{background:#d8f5e8;color:#1a5c38;border:1px solid #a8dcc0}
+.bPEL{background:#fff0d8;color:#7a4800;border:1px solid #f0d090}
+.bEMD{background:#ffe8f0;color:#7a1840;border:1px solid #f0b8d0}
+.bREQ{background:#f0f0f0;color:#3a3a3a;border:1px solid #d8d8d8}
+.bIND{background:#fff0e8;color:#7a3800;border:1px solid #f0c8a8}
+.bMO{background:#f8e8ff;color:#5a1880;border:1px solid #e0b8f8}
+.status{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
+.stT{background:#e8f4ff;color:#1a5a9a}
+.stE{background:#e8f5e8;color:#1a6a28}
+.stA{background:#ffeaea;color:#8a1a1a}
+.stP{background:#fff8e0;color:#7a5a00}
+.ec{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ec:hover{white-space:normal;overflow:visible}
+.and-cell{max-width:220px;font-size:11px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.and-cell:hover{white-space:normal;overflow:visible}
+.and-live{color:#1a5c38;font-size:11px}
+.and-loading{color:#aaa;font-size:11px;font-style:italic}
+.and-error{color:#c44;font-size:11px}
+.sapl-link{color:#2d5a3d;text-decoration:none;font-size:10px}
+.sapl-link:hover{text-decoration:underline}
+.sub-sim{display:inline-block;width:16px;height:16px;background:#2d5a3d;border-radius:50%;text-align:center;line-height:16px;font-size:9px;color:#fff}
+.progress-bar{height:3px;background:#e8f5ee;position:relative;overflow:hidden}
+.progress-fill{height:100%;background:#2d5a3d;transition:width .3s;width:0%}
+footer{background:#1a3a2a;color:rgba(255,255,255,.4);text-align:center;font-size:11px;padding:1.2rem}
+footer span{color:#c9a84c}
+@media(max-width:768px){.header,.filters-inner,.wrap{padding-left:1rem;padding-right:1rem}.metric{min-width:60px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-label">Câmara Municipal de Manaus</div>
+      <div class="header-title">Ver. Aldenor Lima — Painel Legislativo</div>
+      <div class="header-sub">União Brasil · Presidente da COMPETS · Mandato 2025–2028</div>
+    </div>
+    <div class="header-right">
+      <div id="sync-status">Andamento: não carregado</div>
+      <div id="sync-date" style="font-size:10px;color:rgba(255,255,255,.3)"></div>
+      <span class="sync-btn" id="sync-btn" onclick="syncSapl()">⟳ Atualizar andamentos do SAPL</span>
+    </div>
+  </div>
+  <div class="metrics-bar">
+    <div class="metrics-inner" id="metrics"></div>
+  </div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+<div class="filters">
+  <div class="filters-inner">
+    <div class="si"><span class="si-icon">🔍</span><input type="text" id="q" placeholder="Buscar por ementa, número, autor..." oninput="render()"></div>
+    <select id="ft" onchange="render()"><option value="">Todos os tipos</option><option>PL</option><option>PDL</option><option>PR</option><option>PEL</option><option>EMD</option><option>REQ</option><option>IND</option><option>MO</option></select>
+    <select id="fa" onchange="render()"><option value="">Todos os anos</option></select>
+    <select id="fau" onchange="render()"><option value="">Todos os autores</option><option value="proprio">Autoria: Aldenor Lima</option><option value="subscrito">Subscrito por Aldenor Lima</option></select>
+    <select id="fs" onchange="render()"><option value="">Todos os status</option><option>Tramitando</option><option>Encerrado</option><option>Arquivado</option><option>Parado</option></select>
+    <span class="ctag" id="ct">—</span>
+  </div>
+</div>
+<div class="wrap">
+  <div class="leg">
+    <div class="li"><div class="lc" style="background:#fffbee"></div>Autoria de Aldenor Lima</div>
+    <div class="li"><div class="lc" style="background:#fff5f0"></div>Subscrito por Aldenor Lima</div>
+    <div class="li"><div class="lc" style="background:#fff"></div>Outros autores</div>
+    <div class="li"><span class="sapl-badge">● SAPL</span> Andamento ao vivo</div>
+  </div>
+  <div class="tc">
+    <table>
+      <thead><tr>
+        <th>Tipo</th><th>Número</th><th>Ano</th><th>Autor</th><th>Sub.</th>
+        <th>Ementa</th><th>Última tramitação (SAPL)</th><th>Status</th><th>Link</th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+</div>
+<footer>Painel Legislativo · Gabinete <span>Ver. Aldenor Lima</span> · Câmara Municipal de Manaus · Dados de andamento: <span>SAPL/CMM</span></footer>
+
+<script>
+// ── Mapeamento número/ano → ID SAPL ───────────────────────────────────────
+var SAPL_IDS = {
+  "PL-067-2026":52269,"PL-068-2026":52270,"PL-070-2026":52272,"PL-071-2026":52273,
+  "PL-073-2026":52275,"PL-075-2026":52277,"PL-076-2026":52278,"PL-077-2026":52279,
+  "PL-079-2026":52281,"PL-081-2026":52283,"PL-173-2026":52377,"PL-191-2026":52396,
+  "PL-310-2026":52519,"PL-431-2026":52647,
+  "PL-001-2025":51258,"PL-125-2025":51402,"PL-131-2025":51408,"PL-141-2025":51418,
+  "PL-151-2025":51428,"PL-152-2025":51429,"PL-153-2025":51430,"PL-154-2025":51431,
+  "PL-158-2025":51437,"PL-159-2025":51438,"PL-160-2025":51439,"PL-161-2025":51440,
+  "PL-163-2025":51442,"PL-164-2025":51443,"PL-165-2025":51444,"PL-178-2025":51463,
+  "PL-241-2025":51533,"PL-256-2025":51549,"PL-275-2025":51568,"PL-284-2025":51580,
+  "PL-314-2025":51616,"PL-315-2025":51617,"PL-316-2025":51618,"PL-317-2025":51619,
+  "PL-322-2025":51624,"PL-325-2025":51627,"PL-328-2025":51630,"PL-391-2025":51698,
+  "PL-392-2025":51699,"PL-395-2025":51702,"PL-437-2025":51747,"PL-449-2025":51763,
+  "PL-479-2025":51802,"PL-480-2025":51803,"PL-481-2025":51804,"PL-482-2025":51805,
+  "PL-488-2025":51811,"PL-489-2025":51812,"PL-583-2025":51910,"PL-608-2025":51937,
+  "PL-712-2025":52049
+};
+
+var SAPL_BASE = "https://sapl.cmm.am.gov.br";
+var saplData = {}; // cache: sapl_id -> {andamento, data, em_tramitacao}
+var saplLoaded = false;
+
+// ── Dados estáticos ───────────────────────────────────────────────────────
+var D = [
+  {t:"PL",n:"067",a:"2026",au:"Aldenor Lima",s:false,em:"DISPÕE sobre a política de ação climática municipal.",st:"Tramitando"},
+  {t:"PL",n:"068",a:"2026",au:"Aldenor Lima",s:false,em:"CONSIDERA de Utilidade Pública o Instituto Abrace+.",st:"Tramitando"},
+  {t:"PL",n:"070",a:"2026",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Proteção aos Animais de Mulheres em Situação de Violência Doméstica.",st:"Tramitando"},
+  {t:"PL",n:"071",a:"2026",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Reconhecimento da Família Multiespécie.",st:"Tramitando"},
+  {t:"PL",n:"073",a:"2026",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Proteção Animal nos Condomínios e Residenciais Populares.",st:"Tramitando"},
+  {t:"PL",n:"075",a:"2026",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Incentivo à Cultura da Adoção Tardia de Animais Adultos e Especiais.",st:"Tramitando"},
+  {t:"PL",n:"076",a:"2026",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Apoio Alimentar para Animais de Tutores em Situação de Vulnerabilidade Social.",st:"Tramitando"},
+  {t:"PL",n:"077",a:"2026",au:"Aldenor Lima",s:false,em:"INSTITUI Programa Municipal de Proteção Animal em Obras Públicas e Áreas sob Responsabilidade do Poder Público.",st:"Tramitando"},
+  {t:"PL",n:"079",a:"2026",au:"Aldenor Lima",s:false,em:"INSTITUI o Selo Rua Amiga dos Animais.",st:"Tramitando"},
+  {t:"PL",n:"081",a:"2026",au:"Aldenor Lima",s:false,em:"Institui a Semana Municipal de Saúde Mental dos Médicos Veterinários e Zootecnistas.",st:"Tramitando"},
+  {t:"PL",n:"173",a:"2026",au:"Aldenor Lima",s:false,em:"ALTERAR a Lei nº 1.273/2008 - Cemitérios e Serviços Funerários.",st:"Tramitando"},
+  {t:"PL",n:"191",a:"2026",au:"Aldenor Lima",s:false,em:"CONSIDERA de Utilidade Pública o Instituto Notre Dame.",st:"Tramitando"},
+  {t:"PL",n:"310",a:"2026",au:"Aldenor Lima",s:false,em:"DISPÕE sobre comunicação obrigatória de maus-tratos a animais em condomínios.",st:"Tramitando"},
+  {t:"PL",n:"431",a:"2026",au:"Aldenor Lima",s:false,em:"ACRESCENTA o inciso XXI ao art. 1º da Lei Municipal nº 2.195/2016 - proteção e senciência animal como tema transversal.",st:"Tramitando"},
+  {t:"PL",n:"001",a:"2025",au:"Aldenor Lima",s:false,em:"DISPÕE sobre a proibição da queima, soltura e comercialização de fogos de artifício com estampido.",st:"Tramitando"},
+  {t:"PL",n:"125",a:"2025",au:"Aldenor Lima",s:false,em:"Autoriza aquisição de Itraconazol para tratamento de esporotricose animal pelo CCZ.",st:"Encerrado"},
+  {t:"PL",n:"131",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Selo Estabelecimento Amigo do Autista.",st:"Parado"},
+  {t:"PL",n:"141",a:"2025",au:"Aldenor Lima",s:false,em:"DISPÕE sobre obrigatoriedade de abafadores de som em estabelecimentos para pessoas com TEA.",st:"Parado"},
+  {t:"PL",n:"151",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Selo PET Friendly no Município de Manaus.",st:"Tramitando"},
+  {t:"PL",n:"152",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Plano de Ação para Espécies Ameaçadas no Município de Manaus.",st:"Parado"},
+  {t:"PL",n:"153",a:"2025",au:"Aldenor Lima",s:false,em:"DISPÕE sobre embarque prioritário de gestantes no transporte coletivo.",st:"Tramitando"},
+  {t:"PL",n:"154",a:"2025",au:"Aldenor Lima",s:false,em:"DISPÕE sobre Educação Climática no programa de ensino das escolas municipais.",st:"Tramitando"},
+  {t:"PL",n:"158",a:"2025",au:"Aldenor Lima",s:false,em:"DISPÕE sobre afixação de informativos sobre bengalas e deficiência visual nos órgãos públicos.",st:"Tramitando"},
+  {t:"PL",n:"159",a:"2025",au:"Aldenor Lima",s:false,em:"DISPÕE sobre regulamentação da posse responsável de animais domésticos.",st:"Arquivado"},
+  {t:"PL",n:"160",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Programa Municipal de Monitoramento da Fauna Silvestre (PROMOFAUNA).",st:"Parado"},
+  {t:"PL",n:"161",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Descentralização das Ações de Vigilância em Zoonoses.",st:"Parado"},
+  {t:"PL",n:"163",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI a Semana Municipal Cadeia para Maus-Tratos.",st:"Parado"},
+  {t:"PL",n:"164",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Programa Caminhar com Inclusão para pessoas com TEA.",st:"Parado"},
+  {t:"PL",n:"165",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Selo Escola Amiga da Proteção Animal.",st:"Tramitando"},
+  {t:"PL",n:"178",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Unidades Básicas de Saúde Animal.",st:"Parado"},
+  {t:"PL",n:"241",a:"2025",au:"Aldenor Lima",s:false,em:"ALTERA a Lei nº 3.278/2024 - veda benefício Casa Manauara a condenados por maus-tratos a animais.",st:"Parado"},
+  {t:"PL",n:"256",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Programa Municipal de Prevenção ao Atropelamento de Animais.",st:"Parado"},
+  {t:"PL",n:"275",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Reconhecimento e Valorização de Protetores e Cuidadores Independentes.",st:"Tramitando"},
+  {t:"PL",n:"284",a:"2025",au:"Aldenor Lima",s:false,em:"ACRESCENTA inciso X ao art. 3º da Lei Municipal nº 266/1994 - Zoonoses.",st:"Parado"},
+  {t:"PL",n:"314",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI Programa Municipal de Proteção Animal em Obras Públicas. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"315",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI Política de Apoio Alimentar para Animais de Tutores. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"316",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI Política de Promoção da Saúde Mental Através da Convivência com Animais.",st:"Arquivado"},
+  {t:"PL",n:"317",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI Política de Incentivo à Adoção Tardia. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"322",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI Política de Proteção Animal nos Condomínios. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"325",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI Política de Reconhecimento da Família Multiespécie. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"328",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI Política de Proteção aos Animais de Mulheres em Violência Doméstica. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"391",a:"2025",au:"Aldenor Lima",s:false,em:"DISPÕE sobre política de ação climática. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"392",a:"2025",au:"Aldenor Lima",s:false,em:"Institui o Dia Municipal do Sauim-de-coleira.",st:"Tramitando"},
+  {t:"PL",n:"395",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Selo Rua Amiga dos Animais. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"437",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Dia Municipal da Adoção de Animais.",st:"Arquivado"},
+  {t:"PL",n:"449",a:"2025",au:"Aldenor Lima",s:false,em:"CONSIDERA de Utilidade Pública o Instituto Lima.",st:"Tramitando"},
+  {t:"PL",n:"479",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI a campanha Julho Sem Plástico.",st:"Arquivado"},
+  {t:"PL",n:"480",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Agosto Verde Claro no calendário oficial de Manaus.",st:"Arquivado"},
+  {t:"PL",n:"481",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI o Dia Municipal do Gato.",st:"Parado"},
+  {t:"PL",n:"482",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI a Política Municipal de Promoção de Empregos Verdes e Sustentáveis.",st:"Arquivado"},
+  {t:"PL",n:"488",a:"2025",au:"Aldenor Lima",s:false,em:"DISPÕE sobre regulamentação da utilização de animais vivos em atividades escolares.",st:"Arquivado"},
+  {t:"PL",n:"489",a:"2025",au:"Aldenor Lima",s:false,em:"CONSIDERA de Utilidade Pública a Instituição Cultural e Educacional Arte sem Fronteiras (ASF).",st:"Parado"},
+  {t:"PL",n:"583",a:"2025",au:"Aldenor Lima",s:false,em:"INSTITUI a Semana Municipal de Saúde Mental dos Médicos Veterinários. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"608",a:"2025",au:"Aldenor Lima",s:false,em:"CONSIDERA de Utilidade Pública o Instituto Abrace+. (versão 2025)",st:"Arquivado"},
+  {t:"PL",n:"712",a:"2025",au:"Aldenor Lima",s:false,em:"Inclui o Médico-Veterinário da Família na Equipe Multiprofissional na Atenção Primária.",st:"Arquivado"},
+  {t:"PL",n:"011",a:"2025",au:"Ivo Neto",s:true,em:"INSTITUI o Dia Municipal de Conscientização sobre a Fissura Labiopalatina.",st:"Tramitando"},
+  {t:"PL",n:"015",a:"2025",au:"Prof. Samuel",s:true,em:"DISPÕE sobre meia entrada para Portadores do TEA.",st:"Tramitando"},
+  {t:"PL",n:"025",a:"2025",au:"Marco Castilhos",s:true,em:"Dispõe sobre isenção de taxa de inscrição em concursos públicos.",st:"Tramitando"},
+  {t:"PL",n:"029",a:"2025",au:"Marco Castilhos",s:true,em:"Dispõe sobre proteção do direito à educação das pessoas com deficiência.",st:"Tramitando"},
+  {t:"PL",n:"053",a:"2025",au:"Ivo Neto",s:true,em:"DISPÕE sobre desconto no IPTU para famílias com criança autista.",st:"Tramitando"},
+  {t:"PL",n:"063",a:"2025",au:"Paulo Tyrone",s:true,em:"ALTERA a Lei 2.884/2022 - direitos de pessoas com TEA.",st:"Tramitando"},
+  {t:"PL",n:"070",a:"2025",au:"Coronel Rosses",s:true,em:"Institui o protocolo Nao e Nao para prevenção ao assédio.",st:"Tramitando"},
+  {t:"PL",n:"073",a:"2025",au:"Paulo Tyrone",s:true,em:"INSTITUI Campanha Permanente de Conscientização pela Inclusão e Combate ao Preconceito.",st:"Parado"},
+  {t:"PL",n:"075",a:"2025",au:"Eurico Tavares",s:true,em:"DISPÕE sobre atendimento psicossocial prioritário no SUS.",st:"Parado"},
+  {t:"PL",n:"077",a:"2025",au:"Rodrigo Sa",s:true,em:"DISPÕE sobre o aplicativo SOS Mulher.",st:"Tramitando"},
+  {t:"PL",n:"092",a:"2025",au:"Eduardo Assis",s:true,em:"DISPÕE sobre ingresso de pessoas com doença celíaca com alimentos.",st:"Tramitando"},
+  {t:"PL",n:"107",a:"2025",au:"Janjao",s:true,em:"Dispõe sobre isenção de IPTU para maes solteiras.",st:"Tramitando"},
+  {t:"PL",n:"109",a:"2025",au:"Janjao",s:true,em:"Institui cota de bolsa universitária para pais de crianças com TEA.",st:"Tramitando"},
+  {t:"PL",n:"112",a:"2025",au:"Gilmar Nascimento",s:true,em:"DECLARA o Festival Folclórico do CSU do Parque 10 de relevante interesse cultural.",st:"Encerrado"},
+  {t:"PL",n:"120",a:"2025",au:"Raiff Matos",s:true,em:"INSTITUI a Semana Municipal de Conscientização e Combate à Evasão Escolar.",st:"Tramitando"},
+  {t:"PL",n:"128",a:"2025",au:"Diego Afonso",s:true,em:"INSTITUI o Programa IPTU Verde.",st:"Parado"},
+  {t:"PL",n:"181",a:"2025",au:"Prof. Samuel",s:true,em:"DISPÕE sobre divulgação da Lei Federal nº 12.764/2012 (direitos da pessoa com autismo).",st:"Tramitando"},
+  {t:"PL",n:"185",a:"2025",au:"Jander Lobato",s:true,em:"ACRESCENTA dispositivo à Lei nº 3.380/2009 - educação inclusiva.",st:"Parado"},
+  {t:"PL",n:"187",a:"2025",au:"Capitao Carpe",s:true,em:"Cria Sistema de Alerta de Chuva em Areas de Risco.",st:"Parado"},
+  {t:"PL",n:"192",a:"2025",au:"Eurico Tavares",s:true,em:"DISPÕE sobre apoio a competições paradesportivas para pessoas com TEA.",st:"Parado"},
+  {t:"PL",n:"195",a:"2025",au:"Eurico Tavares",s:true,em:"INSTITUI o Selo Empresa Amiga do Autista.",st:"Parado"},
+  {t:"PL",n:"225",a:"2025",au:"Gilmar Nascimento",s:true,em:"Institui a Política UBS Segura - postos fixos da Guarda Municipal.",st:"Parado"},
+  {t:"PL",n:"232",a:"2025",au:"Raulzinho",s:true,em:"Institui o Dia Municipal do Meu Pet.",st:"Tramitando"},
+  {t:"PL",n:"245",a:"2025",au:"Janjao",s:true,em:"Permite faixa exclusiva para corridas de rua em vias públicas.",st:"Parado"},
+  {t:"PL",n:"389",a:"2025",au:"Dr. Eduardo Assis",s:true,em:"Institui o projeto Abrigo Amigo - abrigos para caes de rua.",st:"Tramitando"},
+  {t:"PL",n:"529",a:"2025",au:"Ivo Neto",s:true,em:"RECONHECE a Novena em honra a Nossa Senhora do Perpetuo Socorro.",st:"Tramitando"},
+  {t:"PL",n:"532",a:"2025",au:"Kennedy Marques",s:true,em:"DISPÕE sobre obrigatoriedade dos hospitais veterinários notificarem maus-tratos.",st:"Tramitando"},
+  {t:"PL",n:"341",a:"2019",au:"Diego Affonso",s:false,em:"Material publicitário em transporte escolar para combater pedofilia e bullying infantil.",st:"Encerrado"},
+  {t:"PL",n:"417",a:"2022",au:"Joao Carlos",s:true,em:"INSTITUI o Programa Permanente de Incentivo à Produção Literária nas escolas.",st:"Encerrado"},
+  {t:"PL",n:"063",a:"2023",au:"Kennedy Marques",s:false,em:"INSTITUI o Censo Municipal de Animais Domésticos.",st:"Tramitando"},
+  {t:"PL",n:"161",a:"2023",au:"Roberto Sabino",s:false,em:"Cota para mulheres vítimas de violência doméstica em empregos públicos municipais.",st:"Tramitando"},
+  {t:"PL",n:"356",a:"2023",au:"Joelson Silva",s:false,em:"Campanha Permanente de Conscientização sobre a Febre Maculosa.",st:"Encerrado"},
+  {t:"PL",n:"368",a:"2023",au:"Thaysa Lippy",s:false,em:"INSTITUI a Política Municipal de Atenção Integral à Pessoa com Ansiedade.",st:"Encerrado"},
+  {t:"PL",n:"400",a:"2023",au:"Raiff Matos",s:true,em:"INSTITUI o Programa de Segurança Alimentar para Pessoas com Diabetes Mellitus.",st:"Tramitando"},
+  {t:"PL",n:"450",a:"2023",au:"Kennedy Marques",s:false,em:"Regulamenta materiais transparentes em edificações altas para evitar colisões de aves.",st:"Tramitando"},
+  {t:"PL",n:"472",a:"2023",au:"Gilmar Nascimento",s:false,em:"Semana Municipal de Atenção ao TDAH, TOD, Dislexia e TDI.",st:"Encerrado"},
+  {t:"PL",n:"517",a:"2023",au:"Elan Alencar",s:false,em:"Distribuição gratuita de medidor contínuo de glicemia a pessoas com diabetes tipo 1.",st:"Tramitando"},
+  {t:"PL",n:"532",a:"2023",au:"Roberto Sabino",s:true,em:"Obrigatoriedade de internet gratuita em estabelecimentos com cardápio digital.",st:"Tramitando"},
+  {t:"PL",n:"011",a:"2024",au:"Ivo Neto",s:true,em:"Semana Municipal de Conscientização sobre Uso de Eletrônicos por Bebes e Crianças.",st:"Tramitando"},
+  {t:"PL",n:"030",a:"2024",au:"Kennedy Marques",s:false,em:"Obrigatoriedade de exibição de vídeos contra maus-tratos em cinemas.",st:"Tramitando"},
+  {t:"PL",n:"063",a:"2024",au:"Kennedy Marques",s:false,em:"Exibição de vídeos de incentivo à adoção de animais em cinemas.",st:"Tramitando"},
+  {t:"PL",n:"072",a:"2024",au:"Prof. Samuel",s:false,em:"INSTITUI o Dia da Mulher na Política.",st:"Encerrado"},
+  {t:"PL",n:"117",a:"2024",au:"Diego Affonso",s:true,em:"Programa de Fortalecimento da Saúde Mental e Enfrentamento à Violência Psicológica (Wollying).",st:"Tramitando"},
+  {t:"PL",n:"159",a:"2024",au:"Thaysa Lippy",s:false,em:"ALTERA a Lei 352/2013 - editais de concursos em Braille.",st:"Encerrado"},
+  {t:"PL",n:"165",a:"2024",au:"Thaysa Lippy",s:false,em:"ALTERA a Lei 2884/2022 - direitos das pessoas com TEA.",st:"Encerrado"},
+  {t:"PL",n:"202",a:"2024",au:"Marcelo Serafim",s:false,em:"Proibição de cobrança de tarifa de disponibilidade de água em condomínios não conectados.",st:"Tramitando"},
+  {t:"PDL",n:"001",a:"2025",au:"Sergio Bare",s:false,em:"CONCEDE Diploma de Cidadão de Manaus à Sra. Maria Jose Freitas e Silva.",st:"Encerrado"},
+  {t:"PDL",n:"002",a:"2025",au:"Dr. Eduardo Assis",s:false,em:"Medalha de Ouro ao Sr. Tadeu de Souza Silva - Vice-Governador.",st:"Encerrado"},
+  {t:"PDL",n:"003",a:"2025",au:"Mesa Diretora",s:false,em:"APROVA a Prestação de Contas PMM 2020 - Prefeito Arthur Virgílio.",st:"Tramitando"},
+  {t:"PDL",n:"004",a:"2025",au:"Mesa Diretora",s:false,em:"APROVA a Prestação de Contas PMM 2021 - Prefeito David Almeida.",st:"Tramitando"},
+  {t:"PDL",n:"005",a:"2025",au:"Jaildo Oliveira",s:false,em:"CONCEDE Diploma de Cidadão de Manaus ao ex-Ver. Ayr Jose de Souza.",st:"Encerrado"},
+  {t:"PDL",n:"006",a:"2025",au:"Ze Ricardo",s:false,em:"CONCEDE Diploma de Cidadã de Manaus à Sra. Nadia Vettori.",st:"Encerrado"},
+  {t:"PDL",n:"007",a:"2025",au:"Marcelo Serafim",s:false,em:"Medalha de Ouro Deodato de Miranda Leão ao Dr. Walter da Silva Jorge Joao.",st:"Encerrado"},
+  {t:"PDL",n:"008",a:"2025",au:"Jaildo Oliveira",s:false,em:"Medalha de Ouro ao Coronel QOPM Wilton Gonçalves Marques.",st:"Tramitando"},
+  {t:"PDL",n:"010",a:"2025",au:"Rosivaldo Cordovil",s:false,em:"CONCEDE Diploma de Cidadão de Manaus ao Sr. Jender de Melo Lobato.",st:"Tramitando"},
+  {t:"PDL",n:"011",a:"2025",au:"Diego Afonso",s:false,em:"Medalha de Ouro ao Coronel Fabiano Machado Bo.",st:"Tramitando"},
+  {t:"PDL",n:"014",a:"2025",au:"Rodrigo Guedes",s:false,em:"Medalha de Honra ao servidor Claudio Marcio Ribeiro dos Santos.",st:"Tramitando"},
+  {t:"PDL",n:"015",a:"2025",au:"Ivo Neto",s:false,em:"Medalha de Ouro Deodato ao Dr. Thiago Carvalho Batista.",st:"Tramitando"},
+  {t:"PDL",n:"016",a:"2025",au:"Roberto Sabino",s:false,em:"Medalha de Ouro ao Coronel QOPM Francisco Orleilson Guimaraes.",st:"Encerrado"},
+  {t:"PDL",n:"018",a:"2025",au:"Jaildo Oliveira",s:false,em:"CONCEDE Diploma de Cidadão de Manaus ao Sr. Manoel Roberto Marques da Franca Ruiz.",st:"Tramitando"},
+  {t:"PDL",n:"019",a:"2025",au:"Jaildo Oliveira",s:false,em:"Medalha de Ouro ao Sr. Francisco da Silva e Santos.",st:"Tramitando"},
+  {t:"PDL",n:"020",a:"2025",au:"Rodrigo Sa",s:false,em:"CONCEDE Diploma de Cidadão de Manaus ao Coronel Francisco Orleilson Guimaraes.",st:"Tramitando"},
+  {t:"PR",n:"001",a:"2025",au:"Mesa Diretora",s:false,em:"Altera os incisos X e XXV do art. 35 e acrescenta inciso XXVIII - Regimento Interno.",st:"Encerrado"},
+  {t:"PR",n:"002",a:"2025",au:"Aldenor Lima",s:false,em:"INSERE o inciso XXVI no art. 35 - criação de Comissão Permanente de Proteção Animal.",st:"Arquivado"},
+  {t:"PR",n:"006",a:"2025",au:"Janjao",s:false,em:"Cria a Frente Parlamentar em Defesa da BR-319.",st:"Tramitando"},
+  {t:"PR",n:"007",a:"2025",au:"Joao Carlos",s:false,em:"Cria a Frente Parlamentar de Defesa da Educação.",st:"Encerrado"},
+  {t:"PR",n:"010",a:"2025",au:"Eurico Tavares",s:false,em:"Cria a Frente Parlamentar em Defesa das Pessoas com Deficiência.",st:"Encerrado"},
+  {t:"PR",n:"013",a:"2025",au:"Mesa Diretora",s:false,em:"ALTERA e revoga dispositivos do Anexo Único da Resolução nº 092/2015.",st:"Encerrado"},
+  {t:"PR",n:"019",a:"2025",au:"Aldenor Lima",s:false,em:"INSERE novo inciso no art. 174 do Regimento Interno - criação da COMPETS.",st:"Tramitando"},
+  {t:"EMD",n:"029",a:"2025",au:"Aldenor Lima",s:false,em:"Altera o art. 2 da LDO - emenda ao PL 281/2025.",st:"Arquivado"},
+  {t:"PEL",n:"002",a:"2025",au:"Mitoso",s:false,em:"Altera o Art. 8 VI, Art. 2 XIV, Art. 80 XVI da Lei Orgânica - Guarda Municipal.",st:"Tramitando"},
+  {t:"REQ",n:"00951/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Cessão de espaço para desfile do Instituto Abrace+.",st:""},
+  {t:"REQ",n:"00990/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Disponibilização de box no Shopping Phillipe Daou para beneficiário indicado.",st:""},
+  {t:"REQ",n:"01142/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Sessão Especial - Dia Internacional da Síndrome de Down (21/03/2025).",st:""},
+  {t:"REQ",n:"01145/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Sessão Especial - Dia Mundial do Orgulho Autista (16/06/2025).",st:""},
+  {t:"REQ",n:"01146/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Sessão Especial - Semana Nacional da Pessoa com Deficiência Intelectual e Múltipla.",st:""},
+  {t:"REQ",n:"01151/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Sessão Especial - Dia Mundial do Meio Ambiente (02/06/2025).",st:""},
+  {t:"REQ",n:"01152/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Sessão Especial - Dia Municipal do Médico Veterinário (09/09/2025).",st:""},
+  {t:"REQ",n:"01848/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Instalação de semáforo com acionamento por botão na Rua Rodrigo Otávio, frente à UFAM.",st:""},
+  {t:"REQ",n:"02471/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Recapeamento asfáltico na Rua Constelação de Gêmeos, bairro Aleixo.",st:""},
+  {t:"REQ",n:"02472/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Vistoria técnica no Conjunto Jardim Veneza, bairro Aleixo.",st:""},
+  {t:"REQ",n:"04140/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Sessão Especial - Dia Mundial do Meio Ambiente (05/06/2025).",st:""},
+  {t:"REQ",n:"04766/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Asfaltamento, meio-fio e passeio público.",st:""},
+  {t:"REQ",n:"04768/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Reparo de buraco na rua com vazamento de água.",st:""},
+  {t:"REQ",n:"05202/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Sessão Especial - Dia Municipal do Protetor de Animais (02/10/2025).",st:""},
+  {t:"REQ",n:"07030/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Reparo da quadra da Escola Municipal Graziela Ribeiro.",st:""},
+  {t:"REQ",n:"11315/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Implantação do projeto institucional 1 Semana com o Parlamentar.",st:""},
+  {t:"IND",n:"100/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica estudo de viabilidade para novas ciclovias e faixas de corrida urbana.",st:""},
+  {t:"IND",n:"101/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica criação do Plano Municipal de Proteção e Conservação da Fauna.",st:""},
+  {t:"IND",n:"102/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica estudo atualizado sobre corredores ecológicos em Manaus.",st:""},
+  {t:"IND",n:"103/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica reativação do CETAS municipal.",st:""},
+  {t:"IND",n:"104/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica criação de duas novas unidades do CCZ.",st:""},
+  {t:"IND",n:"110/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica aquisição de Itraconazol para esporotricose animal pelo CCZ.",st:""},
+  {t:"IND",n:"138/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica espaços de regulação sensorial em eventos públicos para pessoas com TEA.",st:""},
+  {t:"IND",n:"139/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica prioridade na lotação para servidores responsáveis por pessoa com deficiência.",st:""},
+  {t:"IND",n:"150/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica implantação de UBS Animal em zonas estratégicas de Manaus.",st:""},
+  {t:"IND",n:"210/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica convocação dos aprovados no concurso da Semsa - Edital nº 002/2021.",st:""},
+  {t:"IND",n:"212/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica medidas para ampliar a Lei nº 4.522/2019 - Maio Amarelo Animal.",st:""},
+  {t:"IND",n:"288/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica criação de Guarda Canina para Manaus.",st:""},
+  {t:"IND",n:"315/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica promoção da Vacinação Antirrábica nos canais de comunicação da PMM.",st:""},
+  {t:"IND",n:"373/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica vacinação e castração de animais em situação de rua no Centro (SEPET).",st:""},
+  {t:"IND",n:"490/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Indica criação de Espaço para Adoção de Animais nas faixas liberadas de Manaus.",st:""},
+  {t:"MO",n:"101/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Moção de homenagem pelos 51 anos do Restaurante Canto da Peixada.",st:""},
+  {t:"MO",n:"113/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Moção de aplausos à DEMA - Operação Anhangá.",st:""},
+  {t:"MO",n:"189/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Moção de aplausos ao Corpo de Bombeiros - incêndio no Distrito Industrial.",st:""},
+  {t:"MO",n:"234/2025",a:"2025",au:"Aldenor Lima",s:false,em:"Moção de parabenização pelo Dia do Médico Veterinário.",st:""},
+  {t:"MO",n:"048/2026",a:"2026",au:"Aldenor Lima",s:false,em:"Moção de parabenização à enxadrista Isabella Cardoso Pinheiro - Campeã Sub-12.",st:""},
+  {t:"MO",n:"048/2026",a:"2026",au:"Aldenor Lima",s:false,em:"Moção de parabenização ao enxadrista Tiago Augusto Adami de Oliveira - Campeão Sub-16.",st:""},
+  {t:"MO",n:"050/2026",a:"2026",au:"Aldenor Lima",s:false,em:"Moção de parabenização ao enxadrista Ryan Freitas Marinho da Cunha Breves - Campeão Sub-14.",st:""},
+  {t:"MO",n:"051/2026",a:"2026",au:"Aldenor Lima",s:false,em:"Moção de parabenização à enxadrista Valentina Martins de Araujo Coelho - Campeã Sub-14.",st:""},
+  {t:"MO",n:"052/2026",a:"2026",au:"Aldenor Lima",s:false,em:"Moção de parabenização ao enxadrista Samuel Mendonça da Silva Lima - Campeão Sub-06.",st:""},
+  {t:"MO",n:"053/2026",a:"2026",au:"Aldenor Lima",s:false,em:"Moção de parabenização ao enxadrista Arthur Hossokaua Freire - 4º Lugar Sub-08.",st:""},
+  {t:"MO",n:"054/2026",a:"2026",au:"Aldenor Lima",s:false,em:"Moção de parabenização ao enxadrista Heitor Carvalho Lacerda Faria - 2º Lugar Sub-08.",st:""},
+  {t:"MO",n:"064/2026",a:"2026",au:"Aldenor Lima",s:false,em:"Moção de parabenização ao cantor Filho do Piseiro - valorização da cultura popular manauara.",st:""},
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function getSaplId(d) {
+  var key = d.t + "-" + d.n.replace(/\//g,"-").replace(/^0+/,"").padStart(3,"0") + "-" + d.a;
+  // normalizar numero
+  var nPad = d.n.replace(/\/.*/,"");
+  while(nPad.length < 3) nPad = "0"+nPad;
+  key = d.t + "-" + nPad + "-" + d.a;
+  return SAPL_IDS[key] || null;
+}
+
+function stC(s) {
+  var l=(s||"").toLowerCase();
+  if(l.indexOf("tramitando")>=0) return "stT";
+  if(l.indexOf("encerrado")>=0||l.indexOf("aprovado")>=0||l.indexOf("promulgado")>=0||l.indexOf("lei ordinária")>=0||l.indexOf("lei ordinaria")>=0) return "stE";
+  if(l.indexOf("arquivado")>=0||l.indexOf("retirado")>=0||l.indexOf("veto")>=0||l.indexOf("rejeit")>=0) return "stA";
+  if(l.indexOf("parado")>=0||l.indexOf("aguardando")>=0) return "stP";
+  return "";
+}
+function stL(s) {
+  var c=stC(s);
+  if(c==="stT") return "Tramitando";
+  if(c==="stE") return "Encerrado";
+  if(c==="stA") return "Arquivado";
+  if(c==="stP") return "Parado";
+  return s||"—";
+}
+function fmtDate(iso) {
+  if(!iso) return "";
+  var d=iso.substring(0,10).split("-");
+  return d[2]+"/"+d[1]+"/"+d[0];
+}
+function truncate(str, n) {
+  if(!str) return "—";
+  return str.length > n ? str.substring(0,n)+"…" : str;
+}
+
+// ── Sincronização SAPL ────────────────────────────────────────────────────
+var syncTotal = 0;
+var syncDone = 0;
+
+function updateProgress() {
+  var pct = syncTotal > 0 ? Math.round((syncDone/syncTotal)*100) : 0;
+  document.getElementById("progress").style.width = pct + "%";
+  document.getElementById("sync-status").textContent = 
+    syncDone < syncTotal ? ("Carregando SAPL: " + syncDone + "/" + syncTotal) : "SAPL atualizado";
+}
+
+async function fetchSaplItem(saplId) {
+  var url = SAPL_BASE + "/api/materia/materialegislativa/" + saplId + "/?format=json";
+  try {
+    var r = await fetch(url);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    var data = await r.json();
+    var obs = data.observacao || "";
+    var dataAtual = data.data_ultima_atualizacao || "";
+    var emTram = data.em_tramitacao;
+    // Extrair ultima tramitacao da observacao
+    var and = obs.replace(/\\r\\n/g," ").replace(/\\n/g," ").replace(/\r\n/g," ").replace(/\n/g," ").trim();
+    if(and.length > 300) and = and.substring(and.length-300);
+    saplData[saplId] = {
+      and: and,
+      data: dataAtual ? dataAtual.substring(0,10) : "",
+      em_tramitacao: emTram,
+      loaded: true
+    };
+  } catch(e) {
+    saplData[saplId] = {and:"Erro ao carregar", data:"", loaded:false};
+  }
+  syncDone++;
+  updateProgress();
+}
+
+async function syncSapl() {
+  var btn = document.getElementById("sync-btn");
+  if(btn.classList.contains("loading")) return;
+  btn.classList.add("loading");
+  btn.textContent = "⟳ Carregando...";
+  
+  // Coletar IDs únicos
+  var ids = [];
+  D.forEach(function(d) {
+    var id = getSaplId(d);
+    if(id && ids.indexOf(id) < 0) ids.push(id);
+  });
+  
+  syncTotal = ids.length;
+  syncDone = 0;
+  updateProgress();
+  
+  // Buscar em lotes de 5 para não sobrecarregar
+  for(var i=0; i<ids.length; i+=5) {
+    var batch = ids.slice(i, i+5);
+    await Promise.all(batch.map(fetchSaplItem));
+    render();
+  }
+  
+  saplLoaded = true;
+  document.getElementById("sync-date").textContent = "Última sincronização: " + new Date().toLocaleString("pt-BR");
+  btn.classList.remove("loading");
+  btn.textContent = "⟳ Atualizar andamentos do SAPL";
+  document.getElementById("progress").style.width = "0%";
+}
+
+// ── Filtros e render ──────────────────────────────────────────────────────
+var anos = [...new Set(D.map(function(d){return d.a}).filter(Boolean))].sort(function(a,b){return b-a});
+var sel = document.getElementById("fa");
+anos.forEach(function(a){ var o=document.createElement("option"); o.value=a; o.textContent=a; sel.appendChild(o); });
+
+function render() {
+  var q=(document.getElementById("q").value||"").toLowerCase();
+  var ft=document.getElementById("ft").value;
+  var fa=document.getElementById("fa").value;
+  var fau=document.getElementById("fau").value;
+  var fs=document.getElementById("fs").value;
+
+  var f=D.filter(function(d){
+    if(ft && d.t!==ft) return false;
+    if(fa && d.a!==fa) return false;
+    var proprio=d.au.toLowerCase().indexOf("aldenor")>=0&&!d.s;
+    if(fau==="proprio"&&!proprio) return false;
+    if(fau==="subscrito"&&!d.s) return false;
+    if(fs){
+      var sl=stL(d.st);
+      if(fs==="Tramitando"&&sl!=="Tramitando") return false;
+      if(fs==="Encerrado"&&sl!=="Encerrado") return false;
+      if(fs==="Arquivado"&&sl!=="Arquivado") return false;
+      if(fs==="Parado"&&sl!=="Parado") return false;
+    }
+    if(q){
+      var h=(d.em+d.n+d.au+d.t+d.a+d.st).toLowerCase();
+      if(h.indexOf(q)<0) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("ct").textContent = f.length+" matéria(s)";
+
+  // Métricas
+  var cnt={};
+  D.forEach(function(d){cnt[d.t]=(cnt[d.t]||0)+1});
+  var sub=D.filter(function(d){return d.s}).length;
+  var tram=D.filter(function(d){return stL(d.st)==="Tramitando"}).length;
+  var enc=D.filter(function(d){return stL(d.st)==="Encerrado"}).length;
+  var ms=[[D.length,"Total"],[cnt["PL"]||0,"PLs"],[cnt["PDL"]||0,"PDLs"],[cnt["PR"]||0,"PRs"],
+    [cnt["EMD"]||0,"EMDs"],[cnt["PEL"]||0,"PELs"],[cnt["REQ"]||0,"REQs"],[cnt["IND"]||0,"INDs"],
+    [cnt["MO"]||0,"Moções"],[sub,"Subscritos"],[tram,"Tramitando"],[enc,"Aprovados"]];
+  document.getElementById("metrics").innerHTML=ms.map(function(m){
+    return "<div class='metric'><div class='metric-val'>"+m[0]+"</div><div class='metric-label'>"+m[1]+"</div></div>";
+  }).join("");
+
+  document.getElementById("tb").innerHTML=f.map(function(d){
+    var proprio=d.au.toLowerCase().indexOf("aldenor")>=0&&!d.s;
+    var rc=d.s?"rs":(proprio?"rp":"ro");
+    var sc=stC(d.st); var sl=stL(d.st);
+    var saplId=getSaplId(d);
+    var saplUrl = saplId ? (SAPL_BASE+"/materia/"+saplId) : null;
+
+    // Coluna andamento
+    var andHtml = "";
+    if(saplId && saplData[saplId]) {
+      var sd = saplData[saplId];
+      if(sd.loaded) {
+        var dateStr = sd.data ? " <span style='color:#aaa;font-size:10px'>("+fmtDate(sd.data)+")</span>" : "";
+        andHtml = "<span class='and-live' title='"+sd.and+"'>"+truncate(sd.and,120)+dateStr+"</span>";
+        // Atualizar status com base no SAPL
+        if(sd.em_tramitacao===true) { sc="stT"; sl="Tramitando"; }
+        else if(sd.em_tramitacao===false) { sc="stE"; sl="Encerrado"; }
+      } else {
+        andHtml = "<span class='and-error'>Erro ao carregar</span>";
+      }
+    } else if(saplId) {
+      andHtml = "<span class='and-loading'>Clique em Atualizar</span>";
+    } else {
+      andHtml = "<span style='color:#aaa;font-size:11px'>—</span>";
+    }
+
+    var linkHtml = saplUrl ? 
+      "<a class='sapl-link' href='"+saplUrl+"' target='_blank'>SAPL ↗</a>" : 
+      "<span style='color:#ddd;font-size:11px'>—</span>";
+
+    return "<tr class='"+rc+"'>"+
+      "<td><span class='badge b"+d.t+"'>"+d.t+"</span></td>"+
+      "<td style='font-weight:500;white-space:nowrap;font-size:11px'>"+d.n+"</td>"+
+      "<td>"+d.a+"</td>"+
+      "<td style='max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px' title='"+d.au+"'>"+d.au+"</td>"+
+      "<td style='text-align:center'>"+(d.s?"<span class='sub-sim'>✓</span>":"<span style='color:#ddd'>—</span>")+"</td>"+
+      "<td class='ec' title='"+d.em+"'>"+d.em+"</td>"+
+      "<td class='and-cell'>"+andHtml+"</td>"+
+      "<td>"+(sc?"<span class='status "+sc+"'>"+sl+"</span>":"<span style='color:#bbb;font-size:11px'>—</span>")+"</td>"+
+      "<td>"+linkHtml+"</td>"+
+    "</tr>";
+  }).join("");
+}
+
+render();
+// Carregar SAPL automaticamente ao abrir
+window.addEventListener("load", function() {
+  setTimeout(syncSapl, 800);
+});
+</script>
+</body>
+</html>
