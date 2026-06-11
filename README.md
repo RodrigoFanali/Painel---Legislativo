@@ -1,0 +1,430 @@
+[index.html](https://github.com/user-attachments/files/28846454/index.html)
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Legislativo — Ver. Aldenor Lima</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#faf8f3;color:#1a1a1a;min-height:100vh}
+.header{background:#1a3a2a;padding:1.5rem 2rem 0}
+.header-label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#c9a84c;margin-bottom:4px}
+.header-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;color:#fff;line-height:1.2}
+.header-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem}
+.header-right{font-size:11px;color:rgba(255,255,255,0.4);text-align:right;line-height:1.6}
+.sync-btn{display:inline-block;margin-top:6px;padding:4px 12px;background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.4);border-radius:20px;color:#f0d080;font-size:11px;cursor:pointer;transition:all .2s}
+.sync-btn:hover{background:rgba(201,168,76,0.35)}
+.sync-btn.loading{opacity:.6;cursor:default}
+.metrics-bar{background:#2d5a3d;border-top:1px solid rgba(201,168,76,0.2);margin-top:1rem}
+.metrics-inner{max-width:1400px;margin:0 auto;padding:.75rem 2rem;display:flex;overflow-x:auto;gap:0}
+.metric{flex:1;min-width:80px;padding:.4rem .75rem;text-align:center;border-right:1px solid rgba(255,255,255,0.1)}
+.metric:last-child{border-right:none}
+.metric-val{font-family:'Playfair Display',serif;font-size:20px;color:#f0d080;line-height:1}
+.metric-label{font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.filters{background:#fff;border-bottom:1px solid #d8d0c0;box-shadow:0 2px 8px rgba(0,0,0,.06);position:sticky;top:0;z-index:100}
+.filters-inner{max-width:1400px;margin:0 auto;padding:.6rem 2rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.si{position:relative;flex:1;min-width:200px}
+.si input{width:100%;padding:7px 10px 7px 30px;border:1px solid #d8d0c0;border-radius:6px;font-size:13px;background:#faf8f3;outline:none}
+.si-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:#888}
+select{padding:6px 10px;border:1px solid #d8d0c0;border-radius:6px;font-size:12px;background:#faf8f3;outline:none;cursor:pointer}
+.ctag{font-size:11px;color:#888;padding:4px 10px;background:#f0ebe0;border-radius:20px;white-space:nowrap}
+.wrap{max-width:1400px;margin:1rem auto;padding:0 2rem 3rem}
+.leg{display:flex;gap:1.5rem;flex-wrap:wrap;font-size:11px;color:#666;margin-bottom:.75rem;align-items:center}
+.li{display:flex;align-items:center;gap:5px}
+.lc{width:12px;height:12px;border-radius:3px;border:1px solid #d8d0c0}
+.sapl-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#2d5a3d;background:#e8f5ee;border:1px solid #a8dcc0;border-radius:20px;padding:1px 8px}
+.tc{background:#fff;border-radius:10px;border:1px solid #d8d0c0;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead tr{background:#f0ebe0;border-bottom:2px solid #d8d0c0}
+th{padding:9px 10px;text-align:left;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:#888;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid #f0ece0;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.rp{background:#fffbee}
+tr.rs{background:#fff5f0}
+tr.ro{background:#fff}
+tr.ro:nth-child(even){background:#fafaf8}
+tr:hover td{filter:brightness(.97)}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500;white-space:nowrap}
+.bPL{background:#ddeeff;color:#1a4a7a;border:1px solid #b8d4f0}
+.bPDL{background:#eeeaff;color:#3a2880;border:1px solid #c8c0f0}
+.bPR{background:#d8f5e8;color:#1a5c38;border:1px solid #a8dcc0}
+.bPEL{background:#fff0d8;color:#7a4800;border:1px solid #f0d090}
+.bEMD{background:#ffe8f0;color:#7a1840;border:1px solid #f0b8d0}
+.bREQ{background:#f0f0f0;color:#3a3a3a;border:1px solid #d8d8d8}
+.bIND{background:#fff0e8;color:#7a3800;border:1px solid #f0c8a8}
+.bMO{background:#f8e8ff;color:#5a1880;border:1px solid #e0b8f8}
+.status{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500}
+.stT{background:#e8f4ff;color:#1a5a9a}
+.stE{background:#e8f5e8;color:#1a6a28}
+.stA{background:#ffeaea;color:#8a1a1a}
+.stP{background:#fff8e0;color:#7a5a00}
+.ec{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ec:hover{white-space:normal;overflow:visible}
+.and-cell{max-width:220px;font-size:11px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.and-cell:hover{white-space:normal;overflow:visible}
+.and-live{color:#1a5c38;font-size:11px}
+.and-loading{color:#aaa;font-size:11px;font-style:italic}
+.and-error{color:#c44;font-size:11px}
+.sapl-link{color:#2d5a3d;text-decoration:none;font-size:10px}
+.sapl-link:hover{text-decoration:underline}
+.sub-sim{display:inline-block;width:16px;height:16px;background:#2d5a3d;border-radius:50%;text-align:center;line-height:16px;font-size:9px;color:#fff}
+.progress-bar{height:3px;background:#e8f5ee;position:relative;overflow:hidden}
+.progress-fill{height:100%;background:#2d5a3d;transition:width .3s;width:0%}
+footer{background:#1a3a2a;color:rgba(255,255,255,.4);text-align:center;font-size:11px;padding:1.2rem}
+footer span{color:#c9a84c}
+@media(max-width:768px){.header,.filters-inner,.wrap{padding-left:1rem;padding-right:1rem}.metric{min-width:60px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-label">Câmara Municipal de Manaus</div>
+      <div class="header-title">Ver. Aldenor Lima — Painel Legislativo</div>
+      <div class="header-sub">União Brasil · Presidente da COMPETS · Mandato 2025–2028</div>
+    </div>
+    <div class="header-right">
+      <div id="sync-status">Carregando matérias…</div>
+      <div id="sync-date" style="font-size:10px;color:rgba(255,255,255,.3)"></div>
+      <span class="sync-btn" id="sync-btn" onclick="syncSapl()">⟳ Atualizar andamentos do SAPL</span>
+    </div>
+  </div>
+  <div class="metrics-bar">
+    <div class="metrics-inner" id="metrics"></div>
+  </div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+<div class="filters">
+  <div class="filters-inner">
+    <div class="si"><span class="si-icon">🔍</span><input type="text" id="q" placeholder="Buscar por ementa, número, autor..." oninput="render()"></div>
+    <select id="ft" onchange="render()"><option value="">Todos os tipos</option><option>PL</option><option>PDL</option><option>PR</option><option>PEL</option><option>EMD</option><option>REQ</option><option>IND</option><option>MO</option></select>
+    <select id="fa" onchange="render()"><option value="">Todos os anos</option></select>
+    <select id="fau" onchange="render()"><option value="">Todos os autores</option><option value="proprio">Autoria: Aldenor Lima</option><option value="subscrito">Subscrito por Aldenor Lima</option></select>
+    <select id="fs" onchange="render()"><option value="">Todos os status</option><option>Tramitando</option><option>Encerrado</option><option>Arquivado</option><option>Parado</option></select>
+    <span class="ctag" id="ct">—</span>
+  </div>
+</div>
+<div class="wrap">
+  <div class="leg">
+    <div class="li"><div class="lc" style="background:#fffbee"></div>Autoria de Aldenor Lima</div>
+    <div class="li"><div class="lc" style="background:#fff5f0"></div>Subscrito por Aldenor Lima</div>
+    <div class="li"><div class="lc" style="background:#fff"></div>Outros autores</div>
+    <div class="li"><span class="sapl-badge">● SAPL</span> Andamento ao vivo</div>
+  </div>
+  <div class="tc">
+    <table>
+      <thead><tr>
+        <th>Tipo</th><th>Número</th><th>Ano</th><th>Autor</th><th>Sub.</th>
+        <th>Ementa</th><th>Andamento / Situação</th><th>Status</th><th>Link</th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+</div>
+<footer>Painel Legislativo · Gabinete <span>Ver. Aldenor Lima</span> · Câmara Municipal de Manaus · Dados: <span>Planilha do gabinete + SAPL/CMM</span></footer>
+
+<script>
+// ── Fonte de dados: planilha do Google (lida em tempo real) ────────────────
+// O painel busca os dados direto da planilha publicada. Para atualizar o
+// site, basta editar a planilha — não é preciso mexer neste arquivo.
+var SHEET_ID  = "1WNtaGhkgVXIeweh3fpXyRI37eXfkEuZ2tn1AuzsgDBs";
+var SHEET_GID = "954298098"; // aba "MATÉRIAS"
+var SHEET_CSV = "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
+                "/gviz/tq?tqx=out:csv&gid=" + SHEET_GID + "&headers=1";
+
+var D = []; // preenchido a partir da planilha
+
+// ── Mapeamento número/ano → ID SAPL ───────────────────────────────────────
+var SAPL_IDS = {
+  "PL-067-2026":52269,"PL-068-2026":52270,"PL-070-2026":52272,"PL-071-2026":52273,
+  "PL-073-2026":52275,"PL-075-2026":52277,"PL-076-2026":52278,"PL-077-2026":52279,
+  "PL-079-2026":52281,"PL-081-2026":52283,"PL-173-2026":52377,"PL-191-2026":52396,
+  "PL-310-2026":52519,"PL-431-2026":52647,
+  "PL-001-2025":51258,"PL-125-2025":51402,"PL-131-2025":51408,"PL-141-2025":51418,
+  "PL-151-2025":51428,"PL-152-2025":51429,"PL-153-2025":51430,"PL-154-2025":51431,
+  "PL-158-2025":51437,"PL-159-2025":51438,"PL-160-2025":51439,"PL-161-2025":51440,
+  "PL-163-2025":51442,"PL-164-2025":51443,"PL-165-2025":51444,"PL-178-2025":51463,
+  "PL-241-2025":51533,"PL-256-2025":51549,"PL-275-2025":51568,"PL-284-2025":51580,
+  "PL-314-2025":51616,"PL-315-2025":51617,"PL-316-2025":51618,"PL-317-2025":51619,
+  "PL-322-2025":51624,"PL-325-2025":51627,"PL-328-2025":51630,"PL-391-2025":51698,
+  "PL-392-2025":51699,"PL-395-2025":51702,"PL-437-2025":51747,"PL-449-2025":51763,
+  "PL-479-2025":51802,"PL-480-2025":51803,"PL-481-2025":51804,"PL-482-2025":51805,
+  "PL-488-2025":51811,"PL-489-2025":51812,"PL-583-2025":51910,"PL-608-2025":51937,
+  "PL-712-2025":52049
+};
+
+var SAPL_BASE = "https://sapl.cmm.am.gov.br";
+var saplData = {}; // cache: sapl_id -> {andamento, data, em_tramitacao}
+var saplLoaded = false;
+
+// ── Leitura da planilha (CSV) ──────────────────────────────────────────────
+function parseCSV(text) {
+  var rows=[], row=[], cur="", q=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; }
+      else cur+=c;
+    } else {
+      if(c==='"') q=true;
+      else if(c===',') { row.push(cur); cur=""; }
+      else if(c==='\r') { /* ignora */ }
+      else if(c==='\n') { row.push(cur); rows.push(row); row=[]; cur=""; }
+      else cur+=c;
+    }
+  }
+  if(cur!=="" || row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+
+function clean(x){ return (x||"").replace(/[\r\n]+/g," ").trim(); }
+
+function buildD(rows) {
+  var out=[];
+  for(var i=1;i<rows.length;i++){ // pula o cabeçalho (linha 0)
+    var r=rows[i];
+    if(!r) continue;
+    var t=clean(r[0]), n=clean(r[1]);
+    if(!t && !n) continue; // ignora linhas vazias
+    out.push({
+      t:  t,
+      n:  n,
+      a:  clean(r[2]),
+      au: clean(r[3]),
+      s:  clean(r[4]).toUpperCase()==="S",
+      em: clean(r[5]),
+      and0: clean(r[6]),   // andamento/situação digitado na planilha
+      st: clean(r[7])
+    });
+  }
+  return out;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function esc(s){
+  return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+                .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+function getSaplId(d) {
+  var nPad = d.n.replace(/\/.*/,"");
+  while(nPad.length < 3) nPad = "0"+nPad;
+  var key = d.t + "-" + nPad + "-" + d.a;
+  return SAPL_IDS[key] || null;
+}
+
+function stC(s) {
+  var l=(s||"").toLowerCase();
+  if(l.indexOf("tramitando")>=0) return "stT";
+  if(l.indexOf("encerrado")>=0||l.indexOf("aprovado")>=0||l.indexOf("promulgado")>=0||l.indexOf("lei ordinária")>=0||l.indexOf("lei ordinaria")>=0) return "stE";
+  if(l.indexOf("arquivado")>=0||l.indexOf("retirado")>=0||l.indexOf("veto")>=0||l.indexOf("rejeit")>=0) return "stA";
+  if(l.indexOf("parado")>=0||l.indexOf("aguardando")>=0) return "stP";
+  return "";
+}
+function stL(s) {
+  var c=stC(s);
+  if(c==="stT") return "Tramitando";
+  if(c==="stE") return "Encerrado";
+  if(c==="stA") return "Arquivado";
+  if(c==="stP") return "Parado";
+  return s||"—";
+}
+function fmtDate(iso) {
+  if(!iso) return "";
+  var d=iso.substring(0,10).split("-");
+  return d[2]+"/"+d[1]+"/"+d[0];
+}
+function truncate(str, n) {
+  if(!str) return "—";
+  return str.length > n ? str.substring(0,n)+"…" : str;
+}
+
+// ── Sincronização SAPL ────────────────────────────────────────────────────
+var syncTotal = 0;
+var syncDone = 0;
+
+function updateProgress() {
+  var pct = syncTotal > 0 ? Math.round((syncDone/syncTotal)*100) : 0;
+  document.getElementById("progress").style.width = pct + "%";
+  document.getElementById("sync-status").textContent =
+    syncDone < syncTotal ? ("Carregando SAPL: " + syncDone + "/" + syncTotal) : "SAPL atualizado";
+}
+
+async function fetchSaplItem(saplId) {
+  var url = SAPL_BASE + "/api/materia/materialegislativa/" + saplId + "/?format=json";
+  try {
+    var r = await fetch(url);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    var data = await r.json();
+    var obs = data.observacao || "";
+    var dataAtual = data.data_ultima_atualizacao || "";
+    var emTram = data.em_tramitacao;
+    var and = obs.replace(/\\r\\n/g," ").replace(/\\n/g," ").replace(/\r\n/g," ").replace(/\n/g," ").trim();
+    if(and.length > 300) and = and.substring(and.length-300);
+    saplData[saplId] = {
+      and: and,
+      data: dataAtual ? dataAtual.substring(0,10) : "",
+      em_tramitacao: emTram,
+      loaded: true
+    };
+  } catch(e) {
+    saplData[saplId] = {and:"Erro ao carregar", data:"", loaded:false};
+  }
+  syncDone++;
+  updateProgress();
+}
+
+async function syncSapl() {
+  if(!D.length) return;
+  var btn = document.getElementById("sync-btn");
+  if(btn.classList.contains("loading")) return;
+  btn.classList.add("loading");
+  btn.textContent = "⟳ Carregando...";
+
+  var ids = [];
+  D.forEach(function(d) {
+    var id = getSaplId(d);
+    if(id && ids.indexOf(id) < 0) ids.push(id);
+  });
+
+  syncTotal = ids.length;
+  syncDone = 0;
+  updateProgress();
+
+  for(var i=0; i<ids.length; i+=5) {
+    var batch = ids.slice(i, i+5);
+    await Promise.all(batch.map(fetchSaplItem));
+    render();
+  }
+
+  saplLoaded = true;
+  document.getElementById("sync-date").textContent = "Última sincronização: " + new Date().toLocaleString("pt-BR");
+  btn.classList.remove("loading");
+  btn.textContent = "⟳ Atualizar andamentos do SAPL";
+  document.getElementById("progress").style.width = "0%";
+}
+
+// ── Filtros e render ──────────────────────────────────────────────────────
+function initFilters() {
+  var anos = [...new Set(D.map(function(d){return d.a}).filter(Boolean))].sort(function(a,b){return b-a});
+  var sel = document.getElementById("fa");
+  // remove anos antigos (mantém "Todos os anos")
+  while(sel.options.length > 1) sel.remove(1);
+  anos.forEach(function(a){ var o=document.createElement("option"); o.value=a; o.textContent=a; sel.appendChild(o); });
+}
+
+function render() {
+  var q=(document.getElementById("q").value||"").toLowerCase();
+  var ft=document.getElementById("ft").value;
+  var fa=document.getElementById("fa").value;
+  var fau=document.getElementById("fau").value;
+  var fs=document.getElementById("fs").value;
+
+  var f=D.filter(function(d){
+    if(ft && d.t!==ft) return false;
+    if(fa && d.a!==fa) return false;
+    var proprio=d.au.toLowerCase().indexOf("aldenor")>=0&&!d.s;
+    if(fau==="proprio"&&!proprio) return false;
+    if(fau==="subscrito"&&!d.s) return false;
+    if(fs){
+      var sl=stL(d.st);
+      if(fs==="Tramitando"&&sl!=="Tramitando") return false;
+      if(fs==="Encerrado"&&sl!=="Encerrado") return false;
+      if(fs==="Arquivado"&&sl!=="Arquivado") return false;
+      if(fs==="Parado"&&sl!=="Parado") return false;
+    }
+    if(q){
+      var h=(d.em+d.n+d.au+d.t+d.a+d.st+d.and0).toLowerCase();
+      if(h.indexOf(q)<0) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("ct").textContent = f.length+" matéria(s)";
+
+  // Métricas
+  var cnt={};
+  D.forEach(function(d){cnt[d.t]=(cnt[d.t]||0)+1});
+  var sub=D.filter(function(d){return d.s}).length;
+  var tram=D.filter(function(d){return stL(d.st)==="Tramitando"}).length;
+  var enc=D.filter(function(d){return stL(d.st)==="Encerrado"}).length;
+  var ms=[[D.length,"Total"],[cnt["PL"]||0,"PLs"],[cnt["PDL"]||0,"PDLs"],[cnt["PR"]||0,"PRs"],
+    [cnt["EMD"]||0,"EMDs"],[cnt["PEL"]||0,"PELs"],[cnt["REQ"]||0,"REQs"],[cnt["IND"]||0,"INDs"],
+    [cnt["MO"]||0,"Moções"],[sub,"Subscritos"],[tram,"Tramitando"],[enc,"Aprovados"]];
+  document.getElementById("metrics").innerHTML=ms.map(function(m){
+    return "<div class='metric'><div class='metric-val'>"+m[0]+"</div><div class='metric-label'>"+m[1]+"</div></div>";
+  }).join("");
+
+  document.getElementById("tb").innerHTML=f.map(function(d){
+    var proprio=d.au.toLowerCase().indexOf("aldenor")>=0&&!d.s;
+    var rc=d.s?"rs":(proprio?"rp":"ro");
+    var sc=stC(d.st); var sl=stL(d.st);
+    var saplId=getSaplId(d);
+    var saplUrl = saplId ? (SAPL_BASE+"/materia/"+saplId) : null;
+
+    // Coluna andamento: SAPL ao vivo > texto da planilha > "—"
+    var andHtml = "";
+    if(saplId && saplData[saplId] && saplData[saplId].loaded) {
+      var sd = saplData[saplId];
+      var dateStr = sd.data ? " <span style='color:#aaa;font-size:10px'>("+fmtDate(sd.data)+")</span>" : "";
+      andHtml = "<span class='and-live' title='"+esc(sd.and)+"'>"+esc(truncate(sd.and,120))+dateStr+"</span>";
+      if(sd.em_tramitacao===true) { sc="stT"; sl="Tramitando"; }
+      else if(sd.em_tramitacao===false) { sc="stE"; sl="Encerrado"; }
+    } else if(d.and0) {
+      andHtml = "<span title='"+esc(d.and0)+"'>"+esc(truncate(d.and0,120))+"</span>";
+    } else if(saplId && saplData[saplId] && !saplData[saplId].loaded) {
+      andHtml = "<span class='and-error'>Erro ao carregar</span>";
+    } else if(saplId) {
+      andHtml = "<span class='and-loading'>Clique em Atualizar</span>";
+    } else {
+      andHtml = "<span style='color:#aaa;font-size:11px'>—</span>";
+    }
+
+    var linkHtml = saplUrl ?
+      "<a class='sapl-link' href='"+saplUrl+"' target='_blank'>SAPL ↗</a>" :
+      "<span style='color:#ddd;font-size:11px'>—</span>";
+
+    return "<tr class='"+rc+"'>"+
+      "<td><span class='badge b"+d.t+"'>"+esc(d.t)+"</span></td>"+
+      "<td style='font-weight:500;white-space:nowrap;font-size:11px'>"+esc(d.n)+"</td>"+
+      "<td>"+esc(d.a)+"</td>"+
+      "<td style='max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px' title='"+esc(d.au)+"'>"+esc(d.au)+"</td>"+
+      "<td style='text-align:center'>"+(d.s?"<span class='sub-sim'>✓</span>":"<span style='color:#ddd'>—</span>")+"</td>"+
+      "<td class='ec' title='"+esc(d.em)+"'>"+esc(d.em)+"</td>"+
+      "<td class='and-cell'>"+andHtml+"</td>"+
+      "<td>"+(sc?"<span class='status "+sc+"'>"+sl+"</span>":"<span style='color:#bbb;font-size:11px'>—</span>")+"</td>"+
+      "<td>"+linkHtml+"</td>"+
+    "</tr>";
+  }).join("");
+}
+
+// ── Inicialização ─────────────────────────────────────────────────────────
+function loadData() {
+  var status = document.getElementById("sync-status");
+  status.textContent = "Carregando matérias da planilha…";
+  fetch(SHEET_CSV)
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
+    .then(function(txt){
+      D = buildD(parseCSV(txt));
+      if(!D.length) throw new Error("Planilha vazia");
+      initFilters();
+      render();
+      status.textContent = D.length + " matérias carregadas";
+      setTimeout(syncSapl, 600); // carrega andamentos do SAPL em seguida
+    })
+    .catch(function(e){
+      status.textContent = "Erro ao carregar a planilha";
+      document.getElementById("tb").innerHTML =
+        "<tr><td colspan='9' style='padding:24px;text-align:center;color:#c44;font-size:13px'>"+
+        "Não foi possível carregar os dados da planilha.<br>"+
+        "Verifique se ela está compartilhada como <b>“qualquer pessoa com o link pode ver”</b>.</td></tr>";
+    });
+}
+
+loadData();
+</script>
+</body>
+</html>
