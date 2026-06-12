@@ -127,16 +127,13 @@ footer span{color:#c9a84c}
 
 <script>
 // ── Fonte de dados: planilha do Google (lida em tempo real) ────────────────
-// O painel busca os dados direto da planilha publicada. Para atualizar o
-// site, basta editar a planilha — não é preciso mexer neste arquivo.
 var SHEET_ID  = "1WNtaGhkgVXIeweh3fpXyRI37eXfkEuZ2tn1AuzsgDBs";
 var SHEET_GID = "954298098"; // aba "MATÉRIAS"
 var SHEET_CSV = "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
                 "/gviz/tq?tqx=out:csv&gid=" + SHEET_GID + "&headers=1";
 
-var D = []; // preenchido a partir da planilha
+var D = [];
 
-// ── Mapeamento número/ano → ID SAPL ───────────────────────────────────────
 var SAPL_IDS = {
   "PL-067-2026":52269,"PL-068-2026":52270,"PL-070-2026":52272,"PL-071-2026":52273,
   "PL-073-2026":52275,"PL-075-2026":52277,"PL-076-2026":52278,"PL-077-2026":52279,
@@ -156,10 +153,9 @@ var SAPL_IDS = {
 };
 
 var SAPL_BASE = "https://sapl.cmm.am.gov.br";
-var saplData = {}; // cache: sapl_id -> {andamento, data, em_tramitacao}
+var saplData = {};
 var saplLoaded = false;
 
-// ── Leitura da planilha (CSV) ──────────────────────────────────────────────
 function parseCSV(text) {
   var rows=[], row=[], cur="", q=false;
   for(var i=0;i<text.length;i++){
@@ -170,7 +166,7 @@ function parseCSV(text) {
     } else {
       if(c==='"') q=true;
       else if(c===',') { row.push(cur); cur=""; }
-      else if(c==='\r') { /* ignora */ }
+      else if(c==='\r') { }
       else if(c==='\n') { row.push(cur); rows.push(row); row=[]; cur=""; }
       else cur+=c;
     }
@@ -183,26 +179,20 @@ function clean(x){ return (x||"").replace(/[\r\n]+/g," ").trim(); }
 
 function buildD(rows) {
   var out=[];
-  for(var i=1;i<rows.length;i++){ // pula o cabeçalho (linha 0)
+  for(var i=1;i<rows.length;i++){
     var r=rows[i];
     if(!r) continue;
     var t=clean(r[0]), n=clean(r[1]);
-    if(!t && !n) continue; // ignora linhas vazias
+    if(!t && !n) continue;
     out.push({
-      t:  t,
-      n:  n,
-      a:  clean(r[2]),
-      au: clean(r[3]),
-      s:  clean(r[4]).toUpperCase()==="S",
-      em: clean(r[5]),
-      and0: clean(r[6]),   // andamento/situação digitado na planilha
-      st: clean(r[7])
+      t:t, n:n, a:clean(r[2]), au:clean(r[3]),
+      s:clean(r[4]).toUpperCase()==="S",
+      em:clean(r[5]), and0:clean(r[6]), st:clean(r[7])
     });
   }
   return out;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
 function esc(s){
   return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
                 .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
@@ -241,7 +231,6 @@ function truncate(str, n) {
   return str.length > n ? str.substring(0,n)+"…" : str;
 }
 
-// ── Sincronização SAPL ────────────────────────────────────────────────────
 var syncTotal = 0;
 var syncDone = 0;
 
@@ -263,12 +252,7 @@ async function fetchSaplItem(saplId) {
     var emTram = data.em_tramitacao;
     var and = obs.replace(/\\r\\n/g," ").replace(/\\n/g," ").replace(/\r\n/g," ").replace(/\n/g," ").trim();
     if(and.length > 300) and = and.substring(and.length-300);
-    saplData[saplId] = {
-      and: and,
-      data: dataAtual ? dataAtual.substring(0,10) : "",
-      em_tramitacao: emTram,
-      loaded: true
-    };
+    saplData[saplId] = { and:and, data:dataAtual?dataAtual.substring(0,10):"", em_tramitacao:emTram, loaded:true };
   } catch(e) {
     saplData[saplId] = {and:"Erro ao carregar", data:"", loaded:false};
   }
@@ -282,23 +266,16 @@ async function syncSapl() {
   if(btn.classList.contains("loading")) return;
   btn.classList.add("loading");
   btn.textContent = "⟳ Carregando...";
-
   var ids = [];
-  D.forEach(function(d) {
-    var id = getSaplId(d);
-    if(id && ids.indexOf(id) < 0) ids.push(id);
-  });
-
+  D.forEach(function(d) { var id = getSaplId(d); if(id && ids.indexOf(id) < 0) ids.push(id); });
   syncTotal = ids.length;
   syncDone = 0;
   updateProgress();
-
   for(var i=0; i<ids.length; i+=5) {
     var batch = ids.slice(i, i+5);
     await Promise.all(batch.map(fetchSaplItem));
     render();
   }
-
   saplLoaded = true;
   document.getElementById("sync-date").textContent = "Última sincronização: " + new Date().toLocaleString("pt-BR");
   btn.classList.remove("loading");
@@ -306,7 +283,6 @@ async function syncSapl() {
   document.getElementById("progress").style.width = "0%";
 }
 
-// ── Filtros e render ──────────────────────────────────────────────────────
 function initFilters() {
   var anos = [...new Set(D.map(function(d){return d.a}).filter(Boolean))].sort(function(a,b){return b-a});
   var sel = document.getElementById("fa");
@@ -397,7 +373,6 @@ function render() {
   }).join("");
 }
 
-// ── Inicialização ─────────────────────────────────────────────────────────
 function loadData() {
   var status = document.getElementById("sync-status");
   status.textContent = "Carregando matérias da planilha…";
