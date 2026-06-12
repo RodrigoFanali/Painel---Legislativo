@@ -310,7 +310,6 @@ async function syncSapl() {
 function initFilters() {
   var anos = [...new Set(D.map(function(d){return d.a}).filter(Boolean))].sort(function(a,b){return b-a});
   var sel = document.getElementById("fa");
-  // remove anos antigos (mantém "Todos os anos")
   while(sel.options.length > 1) sel.remove(1);
   anos.forEach(function(a){ var o=document.createElement("option"); o.value=a; o.textContent=a; sel.appendChild(o); });
 }
@@ -344,7 +343,6 @@ function render() {
 
   document.getElementById("ct").textContent = f.length+" matéria(s)";
 
-  // Métricas
   var cnt={};
   D.forEach(function(d){cnt[d.t]=(cnt[d.t]||0)+1});
   var sub=D.filter(function(d){return d.s}).length;
@@ -364,7 +362,6 @@ function render() {
     var saplId=getSaplId(d);
     var saplUrl = saplId ? (SAPL_BASE+"/materia/"+saplId) : null;
 
-    // Coluna andamento: SAPL ao vivo > texto da planilha > "—"
     var andHtml = "";
     if(saplId && saplData[saplId] && saplData[saplId].loaded) {
       var sd = saplData[saplId];
@@ -412,7 +409,7 @@ function loadData() {
       initFilters();
       render();
       status.textContent = D.length + " matérias carregadas";
-      setTimeout(syncSapl, 600); // carrega andamentos do SAPL em seguida
+      setTimeout(syncSapl, 600);
     })
     .catch(function(e){
       status.textContent = "Erro ao carregar a planilha";
